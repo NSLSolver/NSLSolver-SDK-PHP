@@ -78,6 +78,10 @@ try {
 
 Requests that get 429 or 503 are retried automatically with exponential backoff (up to `max_retries`). Errors 400/401/402/403 fail immediately.
 
+## Documentation
+
+For more information, check out the full documentation at https://docs.nslsolver.com
+
 ## License
 
 MIT
