@@ -16,6 +16,7 @@ use NSLSolver\Exceptions\SolveException;
 use NSLSolver\Exceptions\TypeNotAllowedException;
 use NSLSolver\Results\BalanceResult;
 use NSLSolver\Results\ChallengeResult;
+use NSLSolver\Results\KasadaResult;
 use NSLSolver\Results\TurnstileResult;
 
 /** API client for solving captchas via NSLSolver. */
@@ -84,6 +85,32 @@ class NSLSolver
         ], static fn (mixed $v): bool => $v !== null);
 
         return ChallengeResult::fromArray(
+            $this->requestWithRetry('POST', '/solve', $payload)
+        );
+    }
+
+    /** Solve a Kasada challenge. Requires url, user_agent, ua_version, and kasada_config. */
+    public function solveKasada(array $params): KasadaResult
+    {
+        $this->validateRequired($params, ['url', 'user_agent', 'ua_version', 'kasada_config']);
+
+        $kasadaConfig = array_filter([
+            'p_js_path' => $params['kasada_config']['p_js_path'] ?? null,
+            'fp_host' => $params['kasada_config']['fp_host'] ?? null,
+            'tl_host' => $params['kasada_config']['tl_host'] ?? null,
+            'cd_constant' => $params['kasada_config']['cd_constant'] ?? null,
+        ], static fn (mixed $v): bool => $v !== null);
+
+        $payload = array_filter([
+            'type' => 'kasada',
+            'url' => $params['url'],
+            'user_agent' => $params['user_agent'],
+            'ua_version' => $params['ua_version'],
+            'kasada_config' => $kasadaConfig,
+            'proxy' => $params['proxy'] ?? null,
+        ], static fn (mixed $v): bool => $v !== null);
+
+        return KasadaResult::fromArray(
             $this->requestWithRetry('POST', '/solve', $payload)
         );
     }

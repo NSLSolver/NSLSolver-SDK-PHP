@@ -1,6 +1,6 @@
 # NSLSolver PHP SDK
 
-PHP client for the [NSLSolver](https://nslsolver.com) captcha solving API. Handles Cloudflare Turnstile and Challenge captchas.
+PHP client for the [NSLSolver](https://nslsolver.com) captcha solving API. Handles Cloudflare Turnstile, Challenge, and Kasada captchas.
 
 Requires PHP 8.1+.
 
@@ -32,6 +32,20 @@ $result = $solver->solveChallenge([
 echo $result->cookies['cf_clearance'];
 echo $result->userAgent;
 
+// Kasada
+$result = $solver->solveKasada([
+    'url'        => 'https://example.com/api',
+    'user_agent' => 'Mozilla/5.0 ... Chrome/131.0.0.0 ...',
+    'ua_version' => 131,
+    'kasada_config' => [
+        'p_js_path' => '/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/p.js',
+        'fp_host'   => 'https://fp.example.com',
+        'tl_host'   => 'https://tl.example.com',
+    ],
+]);
+echo $result->headers['x-kpsdk-ct'];
+echo $result->headers['x-kpsdk-cd'];
+
 // Balance
 $balance = $solver->getBalance();
 echo $balance->balance;       // 42.50
@@ -48,7 +62,7 @@ $solver = new NSLSolver('your-api-key', [
 ]);
 ```
 
-Both `solveTurnstile` and `solveChallenge` accept optional `user_agent` and `proxy` params. Turnstile also supports `action` and `cdata`.
+Both `solveTurnstile` and `solveChallenge` accept optional `user_agent` and `proxy` params. Turnstile also supports `action` and `cdata`. `solveKasada` accepts an optional `proxy` and an optional `cd_constant` inside `kasada_config`.
 
 ## Error Handling
 
