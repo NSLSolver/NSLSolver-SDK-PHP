@@ -8,6 +8,8 @@ final readonly class TurnstileResult
 {
     public function __construct(
         public string $token,
+        /** USD deducted from the account balance for this solve. */
+        public float $cost = 0.0,
         public string $type = 'turnstile',
     ) {}
 
@@ -15,6 +17,7 @@ final readonly class TurnstileResult
     {
         return new self(
             token: $data['token'] ?? '',
+            cost: (float) ($data['cost'] ?? 0.0),
             type: $data['type'] ?? 'turnstile',
         );
     }

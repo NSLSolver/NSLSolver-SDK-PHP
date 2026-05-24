@@ -22,7 +22,7 @@ $result = $solver->solveTurnstile([
     'site_key' => '0x4AAAAAAAB...',
     'url'      => 'https://example.com',
 ]);
-echo $result->token;
+echo $result->token, ' cost=$', $result->cost;
 
 // Challenge (proxy required)
 $result = $solver->solveChallenge([
@@ -49,7 +49,10 @@ echo $result->headers['x-kpsdk-cd'];
 // Balance
 $balance = $solver->getBalance();
 echo $balance->balance;       // 42.50
-echo $balance->maxThreads;    // 10
+echo $balance->maxCpm;        // 600
+echo $balance->currentCpm;    // 12  (tokens consumed in the rolling minute)
+echo $balance->cpmLimit;      // 600 (mirror of maxCpm)
+echo $balance->unlimited ? 'unlimited' : 'metered';
 ```
 
 ### Options

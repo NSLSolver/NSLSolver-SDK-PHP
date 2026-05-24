@@ -14,6 +14,7 @@ use NSLSolver\Exceptions\NSLSolverException;
 use NSLSolver\Exceptions\RateLimitException;
 use NSLSolver\Exceptions\SolveException;
 use NSLSolver\Exceptions\TypeNotAllowedException;
+use NSLSolver\Results\AkamaiResult;
 use NSLSolver\Results\BalanceResult;
 use NSLSolver\Results\ChallengeResult;
 use NSLSolver\Results\KasadaResult;
@@ -111,6 +112,27 @@ class NSLSolver
         ], static fn (mixed $v): bool => $v !== null);
 
         return KasadaResult::fromArray(
+            $this->requestWithRetry('POST', '/solve', $payload)
+        );
+    }
+
+    /**
+     * Solve an Akamai Bot Manager challenge. All three of url, user_agent,
+     * and proxy are required. The returned _abck cookie is bound to the
+     * proxy's egress IP and to the submitted UA.
+     */
+    public function solveAkamai(array $params): AkamaiResult
+    {
+        $this->validateRequired($params, ['url', 'user_agent', 'proxy']);
+
+        $payload = [
+            'type' => 'akamai',
+            'url' => $params['url'],
+            'user_agent' => $params['user_agent'],
+            'proxy' => $params['proxy'],
+        ];
+
+        return AkamaiResult::fromArray(
             $this->requestWithRetry('POST', '/solve', $payload)
         );
     }
