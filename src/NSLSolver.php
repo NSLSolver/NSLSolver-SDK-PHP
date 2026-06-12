@@ -18,6 +18,7 @@ use NSLSolver\Results\AkamaiResult;
 use NSLSolver\Results\BalanceResult;
 use NSLSolver\Results\ChallengeResult;
 use NSLSolver\Results\KasadaResult;
+use NSLSolver\Results\RecaptchaResult;
 use NSLSolver\Results\TurnstileResult;
 
 /** API client for solving captchas via NSLSolver. */
@@ -39,8 +40,8 @@ class NSLSolver
         array $options = [],
     ) {
         $this->baseUrl = rtrim($options['base_url'] ?? self::DEFAULT_BASE_URL, '/');
-        $this->timeout = $options['timeout'] ?? self::DEFAULT_TIMEOUT;
-        $this->maxRetries = $options['max_retries'] ?? self::DEFAULT_MAX_RETRIES;
+        $this->timeout = (int) ($options['timeout'] ?? self::DEFAULT_TIMEOUT);
+        $this->maxRetries = (int) ($options['max_retries'] ?? self::DEFAULT_MAX_RETRIES);
 
         $this->httpClient = $options['http_client'] ?? new Client([
             'base_uri' => $this->baseUrl,
@@ -133,6 +134,32 @@ class NSLSolver
         ];
 
         return AkamaiResult::fromArray(
+            $this->requestWithRetry('POST', '/solve', $payload)
+        );
+    }
+
+    /**
+     * Solve a reCAPTCHA v3 (incl. Enterprise) challenge. All of site_key, url,
+     * and proxy are required. Optional `action` defaults to "verify" server-side
+     * when omitted; pass `enterprise => true` for reCAPTCHA Enterprise, and an
+     * optional `user_agent`.
+     */
+    public function solveRecaptchaV3(array $params): RecaptchaResult
+    {
+        $this->validateRequired($params, ['site_key', 'url', 'proxy']);
+
+        $payload = array_filter([
+            'type' => 'recaptchav3',
+            'site_key' => $params['site_key'],
+            'url' => $params['url'],
+            'proxy' => $params['proxy'],
+            'action' => $params['action'] ?? null,
+            // Only send enterprise when explicitly true, as a real JSON boolean.
+            'enterprise' => !empty($params['enterprise']) ? true : null,
+            'user_agent' => $params['user_agent'] ?? null,
+        ], static fn (mixed $v): bool => $v !== null);
+
+        return RecaptchaResult::fromArray(
             $this->requestWithRetry('POST', '/solve', $payload)
         );
     }

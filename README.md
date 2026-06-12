@@ -1,8 +1,8 @@
 # NSLSolver PHP SDK
 
-PHP client for the [NSLSolver](https://nslsolver.com) captcha solving API. Handles Cloudflare Turnstile, Challenge, and Kasada captchas.
+PHP client for the [NSLSolver](https://nslsolver.com) captcha solving API. Handles Cloudflare Turnstile, Cloudflare Challenge, Kasada, Akamai Bot Manager, and reCAPTCHA v3 (incl. Enterprise).
 
-Requires PHP 8.1+.
+Requires PHP 8.1+. Current version: **1.1.0**.
 
 ## Install
 
@@ -38,13 +38,33 @@ $result = $solver->solveKasada([
     'user_agent' => 'Mozilla/5.0 ... Chrome/131.0.0.0 ...',
     'ua_version' => 131,
     'kasada_config' => [
+        // fp_host / tl_host are bare hostnames (no scheme, no path).
         'p_js_path' => '/149e9513-01fa-4fb0-aad4-566afd725d1b/2d206a39-8ed7-437e-a3be-862e0f06eea3/p.js',
-        'fp_host'   => 'https://fp.example.com',
-        'tl_host'   => 'https://tl.example.com',
+        'fp_host'   => 'passport.twitch.tv',
+        'tl_host'   => 'gql.twitch.tv',
     ],
 ]);
 echo $result->headers['x-kpsdk-ct'];
 echo $result->headers['x-kpsdk-cd'];
+
+// Akamai (url, user_agent, and proxy all required)
+$result = $solver->solveAkamai([
+    'url'        => 'https://example.com',
+    'user_agent' => 'Mozilla/5.0 ... Chrome/131.0.0.0 ...',
+    'proxy'      => 'http://user:pass@host:port',
+]);
+echo $result->abck();              // the _abck cookie
+echo $result->cookies['_abck'];    // same value, raw cookie jar
+
+// reCAPTCHA v3 (site_key, url, and proxy all required)
+$result = $solver->solveRecaptchaV3([
+    'site_key'   => '6Lc_aCMTAAAAA...',
+    'url'        => 'https://example.com',
+    'proxy'      => 'http://user:pass@host:port',
+    'action'     => 'login',  // optional, server defaults to "verify"
+    'enterprise' => true,     // optional, only for reCAPTCHA Enterprise
+]);
+echo $result->token, ' cost=$', $result->cost;
 
 // Balance
 $balance = $solver->getBalance();
@@ -65,7 +85,7 @@ $solver = new NSLSolver('your-api-key', [
 ]);
 ```
 
-Both `solveTurnstile` and `solveChallenge` accept optional `user_agent` and `proxy` params. Turnstile also supports `action` and `cdata`. `solveKasada` accepts an optional `proxy` and an optional `cd_constant` inside `kasada_config`.
+Both `solveTurnstile` and `solveChallenge` accept optional `user_agent` and `proxy` params. Turnstile also supports `action` and `cdata`. `solveKasada` accepts an optional `proxy` and an optional `cd_constant` inside `kasada_config`. `solveRecaptchaV3` requires `site_key`, `url`, and `proxy`, and accepts optional `action` (server defaults to `"verify"`), `enterprise` (set `true` for reCAPTCHA Enterprise), and `user_agent`.
 
 ## Error Handling
 

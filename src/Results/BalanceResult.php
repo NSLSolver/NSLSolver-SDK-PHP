@@ -10,16 +10,16 @@ namespace NSLSolver\Results;
 final readonly class BalanceResult
 {
     public function __construct(
-        public float $balance,
-        public bool $unlimited,
+        public float $balance = 0.0,
+        public bool $unlimited = false,
         /** @var list<string> */
-        public array $allowedTypes,
+        public array $allowedTypes = [],
         /** Per-key captchas-per-minute ceiling. 0 means uncapped. */
-        public int $maxCpm,
+        public int $maxCpm = 0,
         /** Tokens consumed in the rolling CPM window. */
-        public int $currentCpm,
+        public int $currentCpm = 0,
         /** Mirror of $maxCpm — useful for dashboards. */
-        public int $cpmLimit,
+        public int $cpmLimit = 0,
         public ?string $unlimitedExpiresAt = null,
         public array $raw = [],
     ) {}
